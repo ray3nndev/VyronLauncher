@@ -46,6 +46,7 @@ import com.google.gson.JsonSyntaxException
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.download.game.GameDownloadInfo
 import com.movtery.zalithlauncher.game.download.game.GameInstaller
+import com.movtery.zalithlauncher.game.download.game.GameDownloadInfo
 import com.movtery.zalithlauncher.game.download.game.optifine.CantFetchingOptiFineUrlException
 import com.movtery.zalithlauncher.game.download.game.optifine.OptiFineForge17IncompatibleException
 import com.movtery.zalithlauncher.game.download.jvm_server.JvmCrashException
@@ -236,12 +237,35 @@ fun DownloadGameScreen(
                         ),
                         eventViewModel = eventViewModel,
                     ) { version ->
-                        backStack.navigateTo(
-                            NormalNavKey.DownloadGame.Addons(
-                                gameVersion = version.version.id,
-                                type = version.type,
+                        if (version.urlSuffix == "horizon-rust") {
+                            val context = LocalContext.current
+                            val info = GameDownloadInfo(
+                                gameVersion = "26.3",
+                                customVersionName = "26.3-rust"
                             )
-                        )
+                            if (viewModel.installOperation !is GameInstallOperation.None) {
+                                return@SelectGameVersionScreen
+                            }
+                            if (!NotificationManager.checkNotificationEnabled(context)) {
+                                viewModel.installOperation = GameInstallOperation.WarningForNotification(info)
+                            } else if (isUsingMobileData(context)) {
+                                viewModel.installOperation = GameInstallOperation.WarningForMobileData(info)
+                            } else {
+                                viewModel.install(
+                                    context = context,
+                                    info = info,
+                                    onStart = { eventViewModel.sendKeepScreen(true) },
+                                    onStop = { eventViewModel.sendKeepScreen(false) }
+                                )
+                            }
+                        } else {
+                            backStack.navigateTo(
+                                NormalNavKey.DownloadGame.Addons(
+                                    gameVersion = version.version.id,
+                                    type = version.type,
+                                )
+                            )
+                        }
                     }
                 }
                 entry<NormalNavKey.DownloadGame.Addons> { key ->

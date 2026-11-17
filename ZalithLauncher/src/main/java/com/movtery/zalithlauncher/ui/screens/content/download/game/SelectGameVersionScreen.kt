@@ -72,6 +72,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.versioninfo.MinecraftVersion
 import com.movtery.zalithlauncher.game.versioninfo.MinecraftVersions
+import com.movtery.zalithlauncher.game.versioninfo.models.VersionManifest
 import com.movtery.zalithlauncher.game.versioninfo.models.isType
 import com.movtery.zalithlauncher.setting.LauncherSettings
 import com.movtery.zalithlauncher.ui.AndroidStringText
@@ -228,7 +229,8 @@ fun SelectGameVersionScreen(
                 isVisible = isVisible,
                 viewModel = viewModel,
                 eventViewModel = eventViewModel,
-                onVersionSelect = onVersionSelect
+                onVersionSelect = onVersionSelect,
+                showRustOption = host is SelectGameVersionHost.Download
             )
         }
 
@@ -253,7 +255,8 @@ private fun SelectGameVersionContent(
     isVisible: Boolean,
     viewModel: VersionsViewModel,
     eventViewModel: EventViewModel,
-    onVersionSelect: (MinecraftVersion) -> Unit
+    onVersionSelect: (MinecraftVersion) -> Unit,
+    showRustOption: Boolean
 ) {
     val ctx = rememberAnimatedContext(isVisible = isVisible)
 
@@ -321,7 +324,8 @@ private fun SelectGameVersionContent(
                             onVersionSelect = onVersionSelect,
                             openLink = { url ->
                                 eventViewModel.sendEvent(EventViewModel.Event.OpenLink(url))
-                            }
+                            },
+                            showRustOption = showRustOption
                         )
                     }
                 }
@@ -468,7 +472,8 @@ private fun VersionList(
     modifier: Modifier = Modifier,
     versions: List<MinecraftVersion>,
     onVersionSelect: (MinecraftVersion) -> Unit,
-    openLink: (url: String) -> Unit
+    openLink: (url: String) -> Unit,
+    showRustOption: Boolean = false
 ) {
     val scrollState = rememberLazyListState()
     LazyColumn(
@@ -492,6 +497,34 @@ private fun VersionList(
                     openLink(wikiUrl)
                 },
             )
+        }
+        if (showRustOption) {
+            versions.firstOrNull { it.version.id == "26.3" }?.let { vanilla263 ->
+                item(key = "horizon-rust-26.3") {
+                    VersionItemLayout(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        version = MinecraftVersion(
+                            version = vanilla263.version.copy(id = "26.3 (Rust)"),
+                            type = vanilla263.type,
+                            summary = null,
+                            urlSuffix = "horizon-rust"
+                        ),
+                        onClick = {
+                            onVersionSelect(
+                                MinecraftVersion(
+                                    version = vanilla263.version,
+                                    type = vanilla263.type,
+                                    summary = null,
+                                    urlSuffix = "horizon-rust"
+                                )
+                            )
+                        },
+                        onAccessWiki = {}
+                    )
+                }
+            }
         }
     }
 }
