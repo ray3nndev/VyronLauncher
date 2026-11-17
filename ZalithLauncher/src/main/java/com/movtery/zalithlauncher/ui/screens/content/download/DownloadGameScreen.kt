@@ -229,6 +229,7 @@ fun DownloadGameScreen(
             popTransitionSpec = rememberTransitionSpec(),
             entryProvider = entryProvider {
                 entry<NormalNavKey.DownloadGame.SelectGameVersion> {
+                    val context = LocalContext.current
                     SelectGameVersionScreen(
                         host = SelectGameVersionHost.Download(
                             mainScreenKey = mainScreenKey,
@@ -238,7 +239,6 @@ fun DownloadGameScreen(
                         eventViewModel = eventViewModel,
                     ) { version ->
                         if (version.urlSuffix == "horizon-rust") {
-                            val context = LocalContext.current
                             val info = GameDownloadInfo(
                                 gameVersion = "26.3",
                                 customVersionName = "26.3-rust"
