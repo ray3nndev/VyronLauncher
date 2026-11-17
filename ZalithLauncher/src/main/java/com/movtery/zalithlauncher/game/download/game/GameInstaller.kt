@@ -48,6 +48,7 @@ import com.movtery.zalithlauncher.game.download.game.optifine.isMinecraft17Plus
 import com.movtery.zalithlauncher.game.download.game.optifine.targetTempOptiFineInstaller
 import com.movtery.zalithlauncher.game.download.jvm_server.JVMSocketServer
 import com.movtery.zalithlauncher.game.download.jvm_server.JvmService
+import com.movtery.zalithlauncher.game.launch.HorizonRustInstallFiles
 import com.movtery.zalithlauncher.game.path.getGameHome
 import com.movtery.zalithlauncher.game.path.getVersionsHome
 import com.movtery.zalithlauncher.game.version.download.BaseMinecraftDownloader
@@ -280,6 +281,26 @@ class GameInstaller(
                     title = androidText(R.string.download_game_install_vanilla, info.gameVersion),
                     task = createMinecraftDownloadTask(info.gameVersion, pathConfig.tempGameVersionsDir)
                 )
+
+                // Horizon Rust is a dedicated 26.3 profile. Keep its additional server input
+                // separate from the normal Java installer and verify it before finalizing.
+                if (info.customVersionName == HorizonRustInstallFiles.PROFILE_NAME) {
+                    require(info.gameVersion == HorizonRustInstallFiles.MINECRAFT_VERSION) {
+                        "The Horizon Rust profile only supports Minecraft ${HorizonRustInstallFiles.MINECRAFT_VERSION}."
+                    }
+                    require(
+                        info.optifine == null && info.forge == null && info.neoforge == null &&
+                        info.fabric == null && info.fabricAPI == null &&
+                        info.legacyFabric == null && info.legacyFabricAPI == null &&
+                        info.quilt == null && info.quiltAPI == null
+                    ) {
+                        "Mod loaders and add-ons are not supported by the Horizon Rust profile."
+                    }
+                    addTask(
+                        title = androidText(R.string.download_game_install_vanilla, "Horizon 26.3 server"),
+                        task = HorizonRustInstallFiles.createServerJarTask(targetGameFolder.absolutePath)
+                    )
+                }
 
                 //下载加载器/模组
                 addLoaderTasks(
