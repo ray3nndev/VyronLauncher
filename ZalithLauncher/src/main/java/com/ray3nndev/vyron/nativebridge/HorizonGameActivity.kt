@@ -5,8 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.Keep
 import com.google.androidgamesdk.GameActivity
-import com.movtery.zalithlauncher.game.launch.HorizonRustInstallFiles
-import java.io.File
 
 /**
  * Native entry surface for Horizon's winit GameActivity backend.
@@ -24,12 +22,6 @@ class HorizonGameActivity : GameActivity() {
             gameDir.isNullOrBlank() || homeDir.isNullOrBlank() || resourcesDir.isNullOrBlank() ->
                 "Horizon launch paths were not supplied by Vyron."
             else -> {
-                val resourcesCheck = runCatching {
-                    HorizonRustInstallFiles.verifyPreparedResources(File(resourcesDir))
-                }
-                if (resourcesCheck.isFailure) {
-                    resourcesCheck.exceptionOrNull()?.message ?: "Horizon resources are incomplete."
-                } else {
                 val configure = runCatching {
                     HorizonBridge.nativeConfigure(gameDir, homeDir, resourcesDir, launchArgsJson)
                 }.getOrElse { -100 }
@@ -42,17 +34,16 @@ class HorizonGameActivity : GameActivity() {
                         else "Horizon startup preparation failed ($prepare). Check the installed 26.3 resources."
                     }
                 }
-                }
+            }
             }
         }
 
-        // Do not enter GameActivity's native event loop when preflight failed.
-        if (failure != null) {
-            setResult(Activity.RESULT_CANCELED, Intent().putExtra(EXTRA_ERROR, failure))
-            finish()
-            return
-        }
+        // GameActivity starts android_main from its superclass onCreate.
         super.onCreate(savedInstanceState)
+        failure?.let {
+            setResult(Activity.RESULT_CANCELED, Intent().putExtra(EXTRA_ERROR, it))
+            finish()
+        }
     }
 
     companion object {
