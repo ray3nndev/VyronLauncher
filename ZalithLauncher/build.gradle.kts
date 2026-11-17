@@ -217,7 +217,7 @@ androidComponents {
                     task.inputs.property("lwjglArch", projectArch)
                     task.doLast {
                         val assetsDir = task.outputDir.get().asFile
-                        val tag = "JREAssetsCleanup"
+                        val tag = "ComponentAssetsCleanup"
                         logger.lifecycle("[$tag] arch: $projectArch")
                         if (projectArch != "all") {
                             val abi = when (projectArch) {
@@ -246,17 +246,6 @@ androidComponents {
                                 }
                             }
 
-                            File(assetsDir, "runtimes/jna").listFiles()?.forEach { versionDir ->
-                                val nativesDir = File(versionDir, "natives")
-                                if (nativesDir.isDirectory) {
-                                    nativesDir.listFiles()?.forEach { dir ->
-                                        if (dir.isDirectory && dir.name != abi) {
-                                            logger.lifecycle("Removing non-target-arch JNA natives: $dir")
-                                            dir.deleteRecursively()
-                                        }
-                                    }
-                                }
-                            }
                         }
                         writeComponentAssetManifests(assetsDir)
                     }
