@@ -1,5 +1,5 @@
-# Zalith Launcher 2
-![Downloads](https://img.shields.io/github/downloads/ZalithLauncher/ZalithLauncher2/total)
+# Vyron Launcher
+![Downloads](https://img.shields.io/github/downloads/ray3nndev/VyronLauncher/total)
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://afdian.com/a/MovTery)
 
 [English](README_EN_US.md) | [繁體中文](README_ZH_TW.md)
@@ -8,7 +8,7 @@
 > [!IMPORTANT]
 > 该项目与 [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher) 属于两个完全不同的项目  
 
-**Zalith Launcher 2** 是一个全新设计、面向 **Android 设备** 的 [Minecraft: Java Edition](https://www.minecraft.net/) 启动器。项目使用 [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) 作为启动核心，采用 **Jetpack Compose** 与 **Material Design 3** 构建现代化 UI 体验。  
+**Vyron Launcher** 是基于 [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2) 修改的非官方 Android 启动器。此分支保留上游 Jetpack Compose 界面，并正在开发原生 Rust Minecraft 启动路径。Vyron 是独立的社区项目，与原始项目维护者没有隶属关系。  
 我们目前正在搭建自己的官方网站 [zalithlauncher.cn](https://zalithlauncher.cn)  
 此外，我们已注意到有第三方使用“Zalith Launcher”名称搭建了一个看似官方的网站。请注意：**该网站并非我们创建**，其通过冒用名义并植入广告牟利。我们对此类行为**不参与、不认可、不信任**。  
 请务必提高警惕，**谨防个人隐私信息泄露**！
@@ -37,7 +37,7 @@
 ### 构建步骤
 
 ```bash
-git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
+git clone https://github.com/ray3nndev/VyronLauncher.git
 # 使用 Android Studio 打开项目并进行构建
 ```
 
