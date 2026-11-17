@@ -1,6 +1,9 @@
 name: Build APK
 
 on:
+  push:
+    branches:
+      - work/horizon-rust-integration
   workflow_dispatch:
   workflow_call:
     inputs:
