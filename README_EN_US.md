@@ -6,17 +6,10 @@
 
 
 > [!IMPORTANT]
-> This project is **completely separate** from [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher).  
-
 **Vyron Launcher** is an unofficial modified Android launcher derived from [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2). It preserves the upstream Jetpack Compose interface while this fork develops a native Rust-based Minecraft launch path. Vyron is an independent community project and is not affiliated with the original maintainers.  
-We are currently building our official website [zalithlauncher.cn](https://zalithlauncher.cn)  
-Additionally, we are aware that a third-party website has been set up using the name “Zalith Launcher”, appearing to be official. Please note: **this site was not created by us**. It exploits the name to display ads for profit. We **do not participate in, endorse, or trust** such content.  
-Please stay vigilant and **protect your personal privacy**!
-
 ## 🌐 Language and Translation Support
 
-We are using the Weblate platform to translate Zalith Launcher 2. You're welcome to join our [Weblate project](https://hosted.weblate.org/projects/zalithlauncher2) and contribute to the translations!  
-Thank you to every language contributor for helping make Zalith Launcher 2 more multilingual and global!
+Vyron is maintained independently. Translation and project support links will be added as the project grows.
 
 ## 📦 Build Instructions (For Developers)
 
