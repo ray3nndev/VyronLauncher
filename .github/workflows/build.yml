@@ -111,6 +111,7 @@ jobs:
         run: |
           NDK_HOME="$ANDROID_HOME/ndk/27.2.12479018"
           TOOLCHAIN="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          echo "ANDROID_NDK_HOME=$NDK_HOME" >> "$GITHUB_ENV"
           echo "HORIZON_ANDROID_NDK_HOME=$NDK_HOME" >> "$GITHUB_ENV"
           echo "CC_aarch64_linux_android=$TOOLCHAIN/aarch64-linux-android24-clang" >> "$GITHUB_ENV"
           echo "CXX_aarch64_linux_android=$TOOLCHAIN/aarch64-linux-android24-clang++" >> "$GITHUB_ENV"
