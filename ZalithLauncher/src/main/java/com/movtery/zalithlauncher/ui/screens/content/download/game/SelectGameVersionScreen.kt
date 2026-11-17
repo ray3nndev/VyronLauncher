@@ -72,7 +72,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.versioninfo.MinecraftVersion
 import com.movtery.zalithlauncher.game.versioninfo.MinecraftVersions
-import com.movtery.zalithlauncher.game.versioninfo.models.VersionManifest
 import com.movtery.zalithlauncher.game.versioninfo.models.isType
 import com.movtery.zalithlauncher.setting.LauncherSettings
 import com.movtery.zalithlauncher.ui.AndroidStringText
@@ -521,7 +520,8 @@ private fun VersionList(
                                 )
                             )
                         },
-                        onAccessWiki = {}
+                        onAccessWiki = {},
+                        typeLabelOverride = "Horizon Rust"
                     )
                 }
             }
@@ -540,6 +540,7 @@ private fun VersionItemLayout(
     color: Color = cardColor(influencedByBackground),
     contentColor: Color = onCardColor(),
     blur: Int = LauncherSettings.backgroundBlur.state,
+    typeLabelOverride: String? = null,
 ) {
     val scale = remember { Animatable(initialValue = 0.95f) }
     LaunchedEffect(Unit) {
@@ -585,7 +586,7 @@ private fun VersionItemLayout(
                     )
 
                     LittleTextLabel(
-                        text = versionType
+                        text = typeLabelOverride ?: versionType
                     )
                 }
 
