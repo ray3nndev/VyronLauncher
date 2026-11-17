@@ -6,18 +6,11 @@
 
 
 > [!IMPORTANT]
-> 该项目与 [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher) 属于两个完全不同的项目  
-
 **Vyron Launcher** 是基于 [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2) 修改的非官方 Android 启动器。此分支保留上游 Jetpack Compose 界面，并正在开发原生 Rust Minecraft 启动路径。Vyron 是独立的社区项目，与原始项目维护者没有隶属关系。  
-我们目前正在搭建自己的官方网站 [zalithlauncher.cn](https://zalithlauncher.cn)  
-此外，我们已注意到有第三方使用“Zalith Launcher”名称搭建了一个看似官方的网站。请注意：**该网站并非我们创建**，其通过冒用名义并植入广告牟利。我们对此类行为**不参与、不认可、不信任**。  
-请务必提高警惕，**谨防个人隐私信息泄露**！
-
 
 ## 🌐 语言与翻译支持
 
-我们正在使用 Weblate 平台翻译 Zalith Launcher 2，欢迎您前往我们的 [Weblate 项目](https://hosted.weblate.org/projects/zalithlauncher2) 参与翻译！  
-感谢每一位语言贡献者的支持，让 Zalith Launcher 2 更加多语、更加全球化！
+Vyron 由社区独立维护。随着项目发展，我们会补充翻译与支持渠道。
 
 
 
