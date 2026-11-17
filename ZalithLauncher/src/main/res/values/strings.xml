@@ -228,9 +228,9 @@
     <!-- Subtitle shown below the animated welcome title -->
     <string name="welcome_screen_subtitle">Come and experience something new.</string>
     <!-- First welcome introduction paragraph; %1$s is the launcher name -->
-    <string name="welcome_screen_intro_primary">Welcome to %1$s, a third-party Minecraft: Java Edition launcher designed for Android devices.</string>
+    <string name="welcome_screen_intro_primary">Welcome to %1$s, an unofficial community-modified Minecraft launcher for Android, derived from Zalith Launcher 2.</string>
     <!-- Second introduction paragraph describing the PojavLauncher core -->
-    <string name="welcome_screen_intro_core">Powered by PojavLauncher, it provides a modern game launch and management experience.</string>
+    <string name="welcome_screen_intro_core">The original Zalith Launcher 2 contributors are credited in About. This fork is independently maintained and is not an official Zalith release.</string>
     <!-- Heading of the agreement links on the welcome screen -->
     <string name="welcome_screen_agreement_title">User Agreements</string>
     <!-- Checkbox label for explicitly accepting the displayed agreements -->
