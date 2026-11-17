@@ -153,7 +153,7 @@ jobs:
           path: ZalithLauncher/build/outputs/apk/release/*.apk
 
       - name: Upload Release Mapping for ${{ matrix.arch }}
-        if: inputs.variant == 'Release'
+        if: env.BUILD_VARIANT == 'Release'
         continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
