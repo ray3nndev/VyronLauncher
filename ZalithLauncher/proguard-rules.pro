@@ -59,3 +59,6 @@
 
 # SoraEditor language-textmate
 -keep class org.jcodings.** { *; }
+
+# Horizon JNI bridge: native symbol names must remain stable.
+-keep class com.ray3nndev.vyron.nativebridge.HorizonBridge { *; }
