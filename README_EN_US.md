@@ -1,5 +1,5 @@
-# Zalith Launcher 2
-![Downloads](https://img.shields.io/github/downloads/ZalithLauncher/ZalithLauncher2/total)
+# Vyron Launcher
+![Downloads](https://img.shields.io/github/downloads/ray3nndev/VyronLauncher/total)
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://afdian.com/a/MovTery)
 
 [简体中文](README.md) | [繁體中文](README_ZH_TW.md)
@@ -8,7 +8,7 @@
 > [!IMPORTANT]
 > This project is **completely separate** from [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher).  
 
-**Zalith Launcher 2** is a newly designed launcher for **Android devices** tailored for [Minecraft: Java Edition](https://www.minecraft.net/). The project uses [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) as its core launching engine and features a modern UI built with **Jetpack Compose** and **Material Design 3**.  
+**Vyron Launcher** is an unofficial modified Android launcher derived from [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2). It preserves the upstream Jetpack Compose interface while this fork develops a native Rust-based Minecraft launch path. Vyron is an independent community project and is not affiliated with the original maintainers.  
 We are currently building our official website [zalithlauncher.cn](https://zalithlauncher.cn)  
 Additionally, we are aware that a third-party website has been set up using the name “Zalith Launcher”, appearing to be official. Please note: **this site was not created by us**. It exploits the name to display ads for profit. We **do not participate in, endorse, or trust** such content.  
 Please stay vigilant and **protect your personal privacy**!
@@ -33,7 +33,7 @@ Thank you to every language contributor for helping make Zalith Launcher 2 more 
 ### Build Steps
 
 ```bash
-git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
+git clone https://github.com/ray3nndev/VyronLauncher.git
 # Open the project in Android Studio and build
 ```
 
