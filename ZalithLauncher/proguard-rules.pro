@@ -62,3 +62,5 @@
 
 # Horizon JNI bridge: native symbol names must remain stable.
 -keep class com.ray3nndev.vyron.nativebridge.HorizonBridge { *; }
+
+-keep class com.ray3nndev.vyron.nativebridge.HorizonGameActivity { *; }

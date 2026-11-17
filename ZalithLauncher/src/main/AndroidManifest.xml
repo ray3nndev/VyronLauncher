@@ -117,6 +117,17 @@
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation"
             android:screenOrientation="sensorLandscape" />
         <activity
+            android:name="com.ray3nndev.vyron.nativebridge.HorizonGameActivity"
+            android:process=":game"
+            android:launchMode="standard"
+            android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation"
+            android:screenOrientation="sensorLandscape"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="horizon_android_bridge" />
+        </activity>
+        <activity
             android:name=".ui.activities.VMActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation"
             android:process=":game"

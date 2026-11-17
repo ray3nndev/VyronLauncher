@@ -300,6 +300,8 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.appcompat)
+    // Required by winit 0.30 Android GameActivity backend.
+    implementation("androidx.games:games-activity:4.4.2")
     implementation(libs.androidx.webkit)
     implementation(libs.documentfile)
     implementation(libs.coil.compose)
