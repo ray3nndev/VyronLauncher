@@ -125,6 +125,61 @@ object HorizonLaunchAdapter {
         )
     }
 
-    /** Serialize for a future private, same-app native handoff. Never log this string. */
+    /**
+     * Build Horizon's actual CLI arguments. Microsoft credentials are handed
+     * over through a short-lived owner-only session file, never through Intent
+     * extras, logs, or persistent launcher settings.
+     */
+    fun createNativeArguments(
+        version: Version,
+        account: Account,
+        privateSessionDirectory: File
+    ): List<String> {
+        val offline = version.offlineAccountLogin || account.isLocalAccount()
+        val args = mutableListOf("--name", account.username)
+
+        if (!offline) {
+            require(account.isMicrosoftAccount()) {
+                "Horizon session handoff currently supports Microsoft accounts only."
+            }
+            val token = account.accessToken.takeUnless { it.isBlank() || it == "0" }
+                ?: throw IllegalStateException("Microsoft session token is missing; refresh the account and retry.")
+
+            require(privateSessionDirectory.isAbsolute) {
+                "Horizon session directory must be an absolute app-private path."
+            }
+            check(privateSessionDirectory.exists() || privateSessionDirectory.mkdirs()) {
+                "Could not create Horizon's private session directory."
+            }
+            val sessionFile = File.createTempFile("session-", ".json", privateSessionDirectory)
+            try {
+                check(sessionFile.setReadable(false, false) && sessionFile.setReadable(true, true)) {
+                    "Could not restrict Horizon session file permissions."
+                }
+                check(sessionFile.setWritable(false, false) && sessionFile.setWritable(true, true)) {
+                    "Could not restrict Horizon session file permissions."
+                }
+                val payload = mapOf(
+                    "name" to account.username,
+                    "uuid" to account.profileId,
+                    "access_token" to token,
+                    "user_type" to "msa",
+                    "xuid" to account.xUid
+                )
+                sessionFile.writeText(GSON.toJson(payload), Charsets.UTF_8)
+                args += listOf("--session-file", sessionFile.absolutePath)
+            } catch (error: Throwable) {
+                sessionFile.delete()
+                throw error
+            }
+        }
+
+        version.getServerIp()?.takeIf { it.isNotBlank() }?.let {
+            args += listOf("--server", it)
+        }
+        return args
+    }
+
+    /** Serialize for diagnostics or a future private same-app handoff. Never log this string. */
     fun encode(request: LaunchRequest): String = GSON.toJson(request)
 }

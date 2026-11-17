@@ -2,31 +2,21 @@ package com.ray3nndev.vyron.nativebridge
 
 import androidx.annotation.Keep
 
-/**
- * JNI boundary for the original Horizon Rust Android engine.
- *
- * The native library is packaged for arm64-v8a. Do not invoke nativePrepare
- * until the launcher has completed Horizon's version/resource preparation
- * and the GameActivity lifecycle handoff is implemented.
- */
+/** JNI boundary for the original Horizon Rust Android engine. */
 @Keep
 object HorizonBridge {
-    init {
-        System.loadLibrary("horizon_android_bridge")
-    }
+    init { System.loadLibrary("horizon_android_bridge") }
 
-    /** Configure app-private paths. Returns 0 on success. */
+    /** Configure private paths and a JSON array of Horizon CLI arguments. */
     @JvmStatic
     external fun nativeConfigure(
         gameDir: String,
         homeDir: String,
-        resourcesDir: String
+        resourcesDir: String,
+        launchArgsJson: String
     ): Int
 
-    /**
-     * Ask Horizon to validate and prepare the configured launch.
-     * Returns 0 on success; negative values indicate a preparation failure.
-     */
+    /** Validate and prepare the configured Horizon launch. */
     @JvmStatic
     external fun nativePrepare(): Int
 }

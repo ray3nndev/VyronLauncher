@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: ray3nndev/horizon-android
-          ref: d0d6a102b7e609dc3591c15775b5f877277f7b4e
+          ref: a547d74384b2f590fc15034e909272e02bcd230d
           path: horizon-android
           submodules: recursive
 
