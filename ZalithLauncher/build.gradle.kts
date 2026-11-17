@@ -91,8 +91,7 @@ fun writeComponentAssetManifests(assetsDir: File) {
         "components/auth_libs",
         "components/caciocavallo",
         "components/caciocavallo17",
-        "components/launcher",
-        "runtimes/jna"
+        "components/launcher"
     )
     val lwjglRoot = File(assetsDir, "app_runtime/lwjgl")
     require(lwjglRoot.isDirectory) { "Missing LWJGL assets: $lwjglRoot" }
@@ -221,17 +220,6 @@ androidComponents {
                         val assetsDir = task.outputDir.get().asFile
                         val tag = "JREAssetsCleanup"
                         logger.lifecycle("[$tag] arch: $projectArch")
-                        val jreList = listOf("jre-8", "jre-17", "jre-21", "jre-25")
-                        jreList.forEach { jreVersion ->
-                            val runtimeDir = File("$assetsDir/runtimes/$jreVersion")
-                            logger.lifecycle("[$tag] runtimeDir: ${runtimeDir.absolutePath}")
-                            runtimeDir.listFiles()?.forEach {
-                                if (projectArch != "all" && it.name != "version" && !it.name.contains("universal") && it.name != "bin-$projectArch.tar.xz") {
-                                    logger.lifecycle("[$tag] delete: $it : ${it.delete()}")
-                                }
-                            }
-                        }
-
                         if (projectArch != "all") {
                             val abi = when (projectArch) {
                                 "arm" -> "armeabi-v7a"
