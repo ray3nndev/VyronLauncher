@@ -36,13 +36,9 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.components.Components
 import com.movtery.zalithlauncher.components.InstallableItem
 import com.movtery.zalithlauncher.components.UnpackComponentsTask
-import com.movtery.zalithlauncher.components.jre.Jre
-import com.movtery.zalithlauncher.components.jre.UnpackJnaTask
-import com.movtery.zalithlauncher.components.jre.UnpackJreTask
 import com.movtery.zalithlauncher.context.readAssetFile
 import com.movtery.zalithlauncher.legal.AvailableAgreement
 import com.movtery.zalithlauncher.path.GLOBAL_JSON
-import com.movtery.zalithlauncher.setting.GameSettings
 import com.movtery.zalithlauncher.setting.launcherMMKV
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.screens.navigateOnce
@@ -222,25 +218,6 @@ class SplashActivity : BaseAppCompatActivity() {
                 )
             )
         }
-        Jre.entries.forEach { jre ->
-            val task = UnpackJreTask(this@SplashActivity, jre)
-            if (!task.isCheckFailed()) {
-                unpackItems.add(
-                    InstallableItem(
-                        jre.jreName,
-                        getString(jre.summary),
-                        task
-                    )
-                )
-            }
-        }
-        unpackItems.add(
-            InstallableItem(
-                "JNA",
-                getString(R.string.unpack_screen_jna),
-                UnpackJnaTask(this@SplashActivity)
-            )
-        )
         unpackItems.sort()
     }
 
@@ -314,10 +291,6 @@ class SplashActivity : BaseAppCompatActivity() {
                 }
             jobs.joinAll()
             if (areAllTasksFinished()) {
-                GameSettings.javaRuntime.apply {
-                    //检查并设置默认的Java环境
-                    if (getValue().isEmpty()) save(Jre.JRE_8.jreName)
-                }
                 finishSplash()
             }
         }
