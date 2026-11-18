@@ -357,6 +357,19 @@ class GameInstaller(
                         )
                     }
                 )
+
+                // Prepare Horizon's 26.3 resources only after the vanilla files
+                // have been copied into the real game directory.
+                if (info.customVersionName == HorizonRustInstallFiles.PROFILE_NAME) {
+                    addTask(
+                        title = androidText(R.string.download_game_install_vanilla, "Horizon 26.3 resources"),
+                        icon = R.drawable.ic_build_outlined,
+                        task = HorizonRustInstallFiles.createResourcePreparationTask(
+                            context = context,
+                            gameHome = targetGameFolder.absolutePath
+                        )
+                    )
+                }
             }
         )
     }

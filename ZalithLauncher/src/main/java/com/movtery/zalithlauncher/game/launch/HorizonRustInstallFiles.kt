@@ -22,11 +22,15 @@ import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.game.download.engine.DownloadEngine
 import com.movtery.zalithlauncher.game.download.engine.DownloadRequest
 import com.movtery.zalithlauncher.game.path.getVersionsHome
+import com.movtery.zalithlauncher.game.multirt.RuntimesManager
+import com.movtery.zalithlauncher.utils.device.Architecture
 import com.movtery.zalithlauncher.game.version.download.BaseMinecraftDownloader
 import com.movtery.zalithlauncher.game.addons.mirror.mapBMCLMirrorUrls
 import com.movtery.zalithlauncher.utils.file.compareSHA1
 import kotlinx.coroutines.Dispatchers
 import java.io.File
+import java.io.FileInputStream
+import java.security.MessageDigest
 import org.json.JSONObject
 
 /**
@@ -43,11 +47,85 @@ object HorizonRustInstallFiles {
     const val MINECRAFT_VERSION = "26.3"
     const val PROFILE_NAME = "26.3-rust"
     const val SERVER_JAR_NAME = "server-26.3.jar"
+    private const val PREPARE_JRE_NAME = "Horizon-25-Prepare"
+    private const val JRE25_URL = "https://github.com/BattlyLauncher/battly-openjdk-build/releases/download/last-release/jre25-android-arm64.tar.xz"
+    private const val JRE25_SIZE = 38_013_284L
+    private const val JRE25_SHA256 = "c4ee53fc699be07ff10930261f12e335cbf411dd53e13a29d4cf7d6be8c35065"
 
 
     /** Canonical app-private output consumed by both preparation and native launch. */
     fun resourcesDirectory(context: Context): File =
         File(context.filesDir, "horizon/26.3/resources")
+
+    /**
+     * Download Java 25 only for Horizon's resource-preparation phase, verify the
+     * release asset digest, run the official preparer, then remove the temporary
+     * runtime so it does not appear in the user's Java runtime list.
+     */
+    fun createResourcePreparationTask(context: Context, gameHome: String): Task = Task.runTask(
+        id = "HorizonRust.PrepareResources",
+        dispatcher = Dispatchers.IO,
+        task = { task ->
+            require(Architecture.getDeviceArchitecture() == Architecture.ARCH_ARM64) {
+                "The Horizon Rust engine currently requires a 64-bit ARM Android device."
+            }
+            task.updateProgress(-1f)
+            val archive = File(context.cacheDir, "horizon-jre25-arm64.tar.xz")
+            try {
+                val javaHome = runCatching {
+                    RuntimesManager.getRuntimeHome(PREPARE_JRE_NAME)
+                }.getOrElse {
+                    RuntimesManager.removeRuntime(PREPARE_JRE_NAME)
+                    DownloadEngine.download(
+                        DownloadRequest(
+                            urls = listOf(JRE25_URL),
+                            targetFile = archive,
+                            expectedSize = JRE25_SIZE
+                        )
+                    )
+                    check(archive.isFile && archive.length() == JRE25_SIZE) {
+                        "The Java 25 runtime download is incomplete."
+                    }
+                    check(sha256(archive) == JRE25_SHA256) {
+                        "The Java 25 runtime failed SHA-256 verification."
+                    }
+                    FileInputStream(archive).use { input ->
+                        RuntimesManager.installRuntime(
+                            nativeLibDir = context.applicationInfo.nativeLibraryDir,
+                            inputStream = input,
+                            name = PREPARE_JRE_NAME
+                        )
+                    }
+                    RuntimesManager.getRuntimeHome(PREPARE_JRE_NAME)
+                }
+
+                prepareResources(
+                    context = context,
+                    gameHome = gameHome,
+                    javaHome = javaHome,
+                    outputDir = resourcesDirectory(context)
+                )
+            } finally {
+                archive.delete()
+                // This runtime is only a preparation dependency, never a gameplay runtime.
+                runCatching { RuntimesManager.removeRuntime(PREPARE_JRE_NAME) }
+            }
+            task.updateProgress(1f)
+        }
+    )
+
+    private fun sha256(file: File): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        file.inputStream().buffered().use { input ->
+            val buffer = ByteArray(64 * 1024)
+            while (true) {
+                val count = input.read(buffer)
+                if (count < 0) break
+                digest.update(buffer, 0, count)
+            }
+        }
+        return digest.digest().joinToString("") { "%02x".format(it) }
+    }
 
     /**
      * Verify prepared resources with Horizon's official checker, not a Kotlin approximation.
