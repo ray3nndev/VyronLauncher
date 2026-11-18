@@ -3,6 +3,7 @@ package com.ray3nndev.vyron.nativebridge
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.annotation.Keep
 import com.google.androidgamesdk.GameActivity
 
@@ -41,6 +42,7 @@ class HorizonGameActivity : GameActivity() {
         // enter the native game loop when configuration or startup validation failed.
         if (failure != null) {
             setResult(Activity.RESULT_CANCELED, Intent().putExtra(EXTRA_ERROR, failure))
+            Toast.makeText(this, failure, Toast.LENGTH_LONG).show()
             finish()
             return
         }

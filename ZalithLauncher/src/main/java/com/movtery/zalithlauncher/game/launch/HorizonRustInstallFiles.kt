@@ -45,6 +45,10 @@ object HorizonRustInstallFiles {
     const val SERVER_JAR_NAME = "server-26.3.jar"
 
 
+    /** Canonical app-private output consumed by both preparation and native launch. */
+    fun resourcesDirectory(context: Context): File =
+        File(context.filesDir, "horizon/26.3/resources")
+
     /**
      * Verify prepared resources with Horizon's official checker, not a Kotlin approximation.
      * The lock file is copied from this APK's pinned engine revision into app-private storage.

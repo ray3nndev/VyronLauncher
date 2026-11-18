@@ -103,6 +103,9 @@ import com.movtery.zalithlauncher.game.input.AWTCharSender
 import com.movtery.zalithlauncher.game.input.CharacterSenderStrategy
 import com.movtery.zalithlauncher.game.input.LWJGLCharSender
 import com.movtery.zalithlauncher.game.launch.GameLauncher
+import com.movtery.zalithlauncher.game.launch.HorizonLaunchAdapter
+import com.movtery.zalithlauncher.game.launch.HorizonRustInstallFiles
+import com.ray3nndev.vyron.nativebridge.HorizonGameActivity
 import com.movtery.zalithlauncher.game.launch.GameService
 import com.movtery.zalithlauncher.game.launch.JvmLaunchInfo
 import com.movtery.zalithlauncher.game.launch.JvmLauncher
@@ -134,6 +137,7 @@ import com.movtery.zalithlauncher.ui.screens.game.elements.OpenFolderLayer
 import com.movtery.zalithlauncher.ui.screens.game.elements.OpenFolderOperation
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.ui.toAndroidString
+import com.movtery.zalithlauncher.utils.GSON
 import com.movtery.zalithlauncher.utils.computeGameDisplayLayout
 import com.movtery.zalithlauncher.utils.computeGameRenderSize
 import com.movtery.zalithlauncher.utils.device.PhysicalMouseChecker
@@ -1135,10 +1139,53 @@ fun runGame(
     version: Version,
     account: Account,
 ) {
+    if (version.getVersionName() == HorizonRustInstallFiles.PROFILE_NAME) {
+        runHorizonGame(context, version, account)
+        return
+    }
+
+    // All ordinary Minecraft versions keep using Zalith's existing JVM path.
     startGameService(context)
     val intent = Intent(context, VMActivity::class.java).apply {
         putExtra(INTENT_RUN_GAME, true)
         putExtra(INTENT_GAME_CONFIG, LaunchConfig(version, account))
+    }
+    context.startActivity(intent)
+}
+
+/**
+ * Launch the dedicated Horizon GameActivity only for the explicit Rust profile.
+ * Never fall back to GameLauncher: that would send Minecraft 26.3 into a JVM
+ * runtime lookup and recreate the crash this route is meant to prevent.
+ */
+private fun runHorizonGame(
+    context: Context,
+    version: Version,
+    account: Account,
+) {
+    check(version.isValid()) { "The Horizon 26.3 profile is not installed correctly." }
+
+    val bridgeLibrary = File(context.applicationInfo.nativeLibraryDir, "libhorizon_android_bridge.so")
+    check(bridgeLibrary.isFile) {
+        "The Horizon Rust engine is not packaged for this device ABI. Install the ARM64 Vyron build."
+    }
+
+    val resourcesDir = HorizonRustInstallFiles.resourcesDirectory(context)
+    HorizonRustInstallFiles.verifyPreparedResources(context, resourcesDir)
+
+    val sessionDirectory = File(context.noBackupFilesDir, "horizon/sessions")
+    val launchArgs = HorizonLaunchAdapter.createNativeArguments(
+        version = version,
+        account = account,
+        privateSessionDirectory = sessionDirectory
+    )
+
+    startGameService(context)
+    val intent = Intent(context, HorizonGameActivity::class.java).apply {
+        putExtra(HorizonGameActivity.EXTRA_GAME_DIR, version.getGameDir().absolutePath)
+        putExtra(HorizonGameActivity.EXTRA_HOME_DIR, File(version.getGameHome()).absolutePath)
+        putExtra(HorizonGameActivity.EXTRA_RESOURCES_DIR, resourcesDir.absolutePath)
+        putExtra(HorizonGameActivity.EXTRA_LAUNCH_ARGS, GSON.toJson(launchArgs))
     }
     context.startActivity(intent)
 }
