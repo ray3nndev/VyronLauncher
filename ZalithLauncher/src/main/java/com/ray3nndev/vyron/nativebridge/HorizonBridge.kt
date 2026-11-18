@@ -32,7 +32,9 @@ object HorizonBridge {
         minecraftDir: String,
         serverJar: String,
         javaHome: String,
-        output: String
+        output: String,
+        javaLauncher: String,
+        jliLibrary: String
     ): String
 
     /** Run the exact checker shipped by the pinned Horizon source revision. */
