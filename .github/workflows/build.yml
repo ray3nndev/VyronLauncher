@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: ray3nndev/horizon-android
-          ref: a547d74384b2f590fc15034e909272e02bcd230d
+          ref: 157a1cf7af9303dac45fe1ceb8fd378838850d55
           path: horizon-android
           submodules: recursive
 
@@ -135,9 +135,18 @@ jobs:
           test -s "$LIBRARY"
           llvm-nm -D "$LIBRARY" | grep -F "Java_com_ray3nndev_vyron_nativebridge_HorizonBridge_nativeConfigure"
           llvm-nm -D "$LIBRARY" | grep -F "Java_com_ray3nndev_vyron_nativebridge_HorizonBridge_nativePrepare"
+          TOOLCHAIN="$ANDROID_HOME/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          JAVA_SHIM="horizon-android/bridge/target/aarch64-linux-android/release/libhorizon_java25.so"
+          "$TOOLCHAIN/aarch64-linux-android24-clang" -O2 -fPIE -pie \
+            horizon-android/bridge/android/java25_launcher.c -o "$JAVA_SHIM" -ldl
+          test -x "$JAVA_SHIM"
+          llvm-readelf -h "$JAVA_SHIM"
+          llvm-readelf -l "$JAVA_SHIM"
           mkdir -p ZalithLauncher/src/main/jniLibs/arm64-v8a
           install -m 0644 "$LIBRARY" ZalithLauncher/src/main/jniLibs/arm64-v8a/libhorizon_android_bridge.so
+          install -m 0755 "$JAVA_SHIM" ZalithLauncher/src/main/jniLibs/arm64-v8a/libhorizon_java25.so
           file ZalithLauncher/src/main/jniLibs/arm64-v8a/libhorizon_android_bridge.so
+          file ZalithLauncher/src/main/jniLibs/arm64-v8a/libhorizon_java25.so
 
       - name: Build APK for ${{ matrix.arch }}
         run: |
