@@ -499,32 +499,32 @@ private fun VersionList(
             )
         }
         if (showRustOption) {
-            versions.firstOrNull { it.version.id == "26.3" }?.let { vanilla263 ->
-                item(key = "horizon-rust-26.3") {
-                    VersionItemLayout(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
-                        version = MinecraftVersion(
-                            version = vanilla263.version.copy(id = "26.3 (Rust)"),
-                            type = vanilla263.type,
-                            summary = null,
-                            urlSuffix = "horizon-rust"
-                        ),
-                        onClick = {
-                            onVersionSelect(
-                                MinecraftVersion(
-                                    version = vanilla263.version,
-                                    type = vanilla263.type,
-                                    summary = null,
-                                    urlSuffix = "horizon-rust"
-                                )
-                            )
-                        },
-                        onAccessWiki = {},
-                        typeLabelOverride = "Horizon Rust"
-                    )
-                }
+            // Horizon 26.3 is an engine-pinned profile, not a normal Mojang
+            // manifest entry. Keep it visible even when Mojang's version list
+            // does not contain a vanilla 26.3 row.
+            val rustVersion = MinecraftVersion(
+                version = com.movtery.zalithlauncher.game.versioninfo.models.VersionManifest.Version(
+                    id = "26.3",
+                    type = "release",
+                    url = "",
+                    time = "",
+                    releaseTime = ""
+                ),
+                type = MinecraftVersion.Type.Release,
+                summary = null,
+                urlSuffix = "horizon-rust"
+            )
+            item(key = "horizon-rust-26.3") {
+                VersionItemLayout(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    version = rustVersion,
+                    onClick = { onVersionSelect(rustVersion) },
+                    onAccessWiki = {},
+                    typeLabelOverride = "Horizon Rust",
+                    showReleaseTime = false
+                )
             }
         }
     }
@@ -542,6 +542,7 @@ private fun VersionItemLayout(
     contentColor: Color = onCardColor(),
     blur: Int = LauncherSettings.backgroundBlur.state,
     typeLabelOverride: String? = null,
+    showReleaseTime: Boolean = true,
 ) {
     val scale = remember { Animatable(initialValue = 0.95f) }
     LaunchedEffect(Unit) {
@@ -599,14 +600,16 @@ private fun VersionItemLayout(
                     )
                 }
 
-                Text(
-                    modifier = Modifier.alpha(0.7f),
-                    text = formatDate(
-                        input = version.version.releaseTime,
-                        pattern = stringResource(R.string.date_format)
-                    ),
-                    style = MaterialTheme.typography.labelMedium
-                )
+                if (showReleaseTime) {
+                    Text(
+                        modifier = Modifier.alpha(0.7f),
+                        text = formatDate(
+                            input = version.version.releaseTime,
+                            pattern = stringResource(R.string.date_format)
+                        ),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
             }
 
             wikiUrl?.let { url ->
