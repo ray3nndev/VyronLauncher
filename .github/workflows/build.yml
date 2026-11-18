@@ -5,6 +5,15 @@ on:
     branches:
       - work/horizon-rust-integration
   workflow_dispatch:
+    inputs:
+      variant:
+        description: APK build variant
+        required: true
+        type: choice
+        options:
+          - Debug
+          - Release
+        default: Debug
   workflow_call:
     inputs:
       variant:
