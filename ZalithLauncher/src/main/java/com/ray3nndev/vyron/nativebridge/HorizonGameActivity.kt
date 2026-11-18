@@ -35,15 +35,17 @@ class HorizonGameActivity : GameActivity() {
                     }
                 }
             }
-            }
         }
 
-        // GameActivity starts android_main from its superclass onCreate.
-        super.onCreate(savedInstanceState)
-        failure?.let {
-            setResult(Activity.RESULT_CANCELED, Intent().putExtra(EXTRA_ERROR, it))
+        // GameActivity starts android_main from its superclass onCreate. Never
+        // enter the native game loop when configuration or startup validation failed.
+        if (failure != null) {
+            setResult(Activity.RESULT_CANCELED, Intent().putExtra(EXTRA_ERROR, failure))
             finish()
+            return
         }
+
+        super.onCreate(savedInstanceState)
     }
 
     companion object {
