@@ -85,7 +85,7 @@ object HorizonRustInstallFiles {
             "horizon/prepare/mods/horizon/src/test/java",
             File(root, "mods/horizon/src/test/java")
         )
-        check(required.all(::complete)) {
+        check(required.all { complete(it) }) {
             "The APK is missing pinned Horizon preparation sources. Rebuild with the Horizon source package step."
         }
         return root
