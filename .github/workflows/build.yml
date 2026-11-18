@@ -114,7 +114,7 @@ jobs:
             echo "Android SDK command-line tools not found under $ANDROID_HOME/cmdline-tools"
             exit 1
           fi
-          yes | "$SDKMANAGER" --install "ndk;27.2.12479018"
+          "$SDKMANAGER" --install "ndk;27.2.12479018"
 
       - name: Configure Horizon Android linker
         if: matrix.arch == 'all' || matrix.arch == 'arm64'
