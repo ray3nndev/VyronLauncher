@@ -131,6 +131,7 @@ private data class VersionFilter(
     val snapshot: Boolean = false,
     val aprilFools: Boolean = false,
     val old: Boolean = false,
+    val rust: Boolean = false,
     val id: String = ""
 )
 
@@ -311,6 +312,7 @@ private fun SelectGameVersionContent(
                                 .padding(horizontal = 12.dp),
                             versionFilter = viewModel.versionFilter,
                             onVersionFilterChange = { viewModel.filterWith(it) },
+                            showRustOption = showRustOption,
                             itemContainerColor = cardColor(),
                             itemContentColor = onCardColor(),
                             onRefreshClick = {
@@ -325,7 +327,8 @@ private fun SelectGameVersionContent(
                             openLink = { url ->
                                 eventViewModel.sendEvent(EventViewModel.Event.OpenLink(url))
                             },
-                            showRustOption = showRustOption
+                            showRustOption = showRustOption && viewModel.versionFilter.rust,
+                            rustSearch = viewModel.versionFilter.id
                         )
                     }
                 }
@@ -339,7 +342,7 @@ private fun SelectGameVersionContent(
  */
 private fun List<MinecraftVersion>.filterVersions(
     versionFilter: VersionFilter
-) = this.filter { version ->
+) = if (versionFilter.rust) emptyList() else this.filter { version ->
     version.isType(
         release = versionFilter.release,
         snapshot = versionFilter.snapshot,
@@ -359,6 +362,7 @@ private fun VersionHeader(
     onVersionFilterChange: (VersionFilter) -> Unit,
     itemContainerColor: Color,
     itemContentColor: Color,
+    showRustOption: Boolean = false,
     onRefreshClick: () -> Unit = {}
 ) {
     Column(modifier = modifier) {
@@ -408,6 +412,23 @@ private fun VersionHeader(
                         },
                         text = stringResource(R.string.download_game_type_old)
                     )
+                    if (showRustOption) {
+                        VersionTypeItem(
+                            selected = versionFilter.rust,
+                            onClick = {
+                                onVersionFilterChange(
+                                    versionFilter.copy(
+                                        rust = !versionFilter.rust,
+                                        release = !versionFilter.rust,
+                                        snapshot = false,
+                                        aprilFools = false,
+                                        old = false
+                                    )
+                                )
+                            },
+                            text = "Rust"
+                        )
+                    }
                 }
 
                 //搜索、刷新
@@ -473,7 +494,8 @@ private fun VersionList(
     versions: List<MinecraftVersion>,
     onVersionSelect: (MinecraftVersion) -> Unit,
     openLink: (url: String) -> Unit,
-    showRustOption: Boolean = false
+    showRustOption: Boolean = false,
+    rustSearch: String = ""
 ) {
     val scrollState = rememberLazyListState()
     LazyColumn(
@@ -498,10 +520,10 @@ private fun VersionList(
                 },
             )
         }
-        if (showRustOption) {
-            // Horizon 26.3 is an engine-pinned profile, not a normal Mojang
-            // manifest entry. Keep it visible even when Mojang's version list
-            // does not contain a vanilla 26.3 row.
+        if (showRustOption && (rustSearch.isBlank() ||
+                "26.3".contains(rustSearch, ignoreCase = true) ||
+                "rust".contains(rustSearch, ignoreCase = true))) {
+            // Horizon 26.3 is a separate engine profile, not a vanilla version.
             val rustVersion = MinecraftVersion(
                 version = com.movtery.zalithlauncher.game.versioninfo.models.VersionManifest.Version(
                     id = "26.3",
