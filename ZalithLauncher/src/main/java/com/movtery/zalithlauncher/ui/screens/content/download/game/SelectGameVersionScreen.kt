@@ -243,7 +243,8 @@ fun SelectGameVersionScreen(
                 isVisible = isVisible,
                 viewModel = viewModel,
                 eventViewModel = eventViewModel,
-                onVersionSelect = onVersionSelect
+                onVersionSelect = onVersionSelect,
+                showRustOption = false
             )
         }
     }
