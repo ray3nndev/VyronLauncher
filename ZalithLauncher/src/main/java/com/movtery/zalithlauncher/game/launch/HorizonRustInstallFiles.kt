@@ -250,6 +250,8 @@ object HorizonRustInstallFiles {
 
         val engineRoot = ensurePreparationRoot(context)
 
+        // The APK packages libc++_shared.so beside this shim so Android can resolve
+        // libjli.so's NDK C++ runtime dependency from the app native-library namespace.
         val javaLauncher = File(context.applicationInfo.nativeLibraryDir, "libhorizon_java25.so")
         val jliLibrary = findJliLibrary(javaHome)
             ?: throw IllegalStateException("Java 25 libjli.so is missing from the extracted runtime: $javaHome")
