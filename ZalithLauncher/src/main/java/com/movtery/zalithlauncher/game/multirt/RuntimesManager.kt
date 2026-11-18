@@ -127,7 +127,8 @@ object RuntimesManager {
         nativeLibDir: String,
         inputStream: InputStream,
         name: String,
-        updateProgress: (Int, Array<Any>) -> Unit = { _, _ -> }
+        updateProgress: (Int, Array<Any>) -> Unit = { _, _ -> },
+        prepareRuntime: Boolean = true
     ) = withContext(Dispatchers.IO) {
         val dest = RUNTIME_FOLDER.child(name)
         try {
@@ -135,7 +136,7 @@ object RuntimesManager {
             uncompressTarXZ(inputStream, dest, updateProgress)
             unpack200(nativeLibDir, dest.absolutePath)
             loadRuntime(name).also { runtime ->
-                postPrepare(runtime)
+                if (prepareRuntime) postPrepare(runtime)
             }
         } catch (e: Exception) {
             FileUtils.deleteDirectory(dest)

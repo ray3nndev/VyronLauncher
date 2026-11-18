@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import org.json.JSONArray
 import androidx.annotation.Keep
 import com.google.androidgamesdk.GameActivity
 
@@ -34,6 +35,18 @@ class HorizonGameActivity : GameActivity() {
                         if (prepare == 0) null
                         else "Horizon startup preparation failed ($prepare). Check the installed 26.3 resources."
                     }
+                }
+            }
+        }
+
+        // The Rust bridge reads the short-lived Microsoft session file during
+        // nativePrepare. Remove it immediately afterwards, including on failure.
+        runCatching {
+            val args = JSONArray(launchArgsJson)
+            for (index in 0 until args.length() - 1) {
+                if (args.optString(index) == "--session-file") {
+                    java.io.File(args.optString(index + 1)).delete()
+                    break
                 }
             }
         }

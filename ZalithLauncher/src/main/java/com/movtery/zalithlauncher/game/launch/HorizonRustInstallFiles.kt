@@ -93,7 +93,8 @@ object HorizonRustInstallFiles {
                         RuntimesManager.installRuntime(
                             nativeLibDir = context.applicationInfo.nativeLibraryDir,
                             inputStream = input,
-                            name = PREPARE_JRE_NAME
+                            name = PREPARE_JRE_NAME,
+                            prepareRuntime = false
                         )
                     }
                     RuntimesManager.getRuntimeHome(PREPARE_JRE_NAME)
