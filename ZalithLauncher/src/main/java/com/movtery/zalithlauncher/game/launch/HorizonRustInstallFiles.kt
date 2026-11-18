@@ -116,6 +116,19 @@ object HorizonRustInstallFiles {
     fun resourcesDirectory(context: Context): File =
         File(context.filesDir, "horizon/26.3/resources")
 
+    /** Find libjli.so in the extracted JRE, allowing vendor-specific directory layouts. */
+    private fun findJliLibrary(javaHome: File): File? {
+        val standardLocations = listOf(
+            File(javaHome, "lib/jli/libjli.so"),
+            File(javaHome, "lib/aarch64/libjli.so"),
+            File(javaHome, "lib/aarch64/jli/libjli.so")
+        )
+        standardLocations.firstOrNull { it.isFile }?.let { return it }
+        return javaHome.walkTopDown()
+            .maxDepth(6)
+            .firstOrNull { it.isFile && it.name == "libjli.so" }
+    }
+
     /**
      * Download Java 25 only for Horizon's resource-preparation phase, verify the
      * release asset digest, run the official preparer, then remove the temporary
@@ -131,9 +144,18 @@ object HorizonRustInstallFiles {
             task.updateProgress(-1f)
             val archive = File(context.cacheDir, "horizon-jre25-arm64.tar.xz")
             try {
-                val javaHome = runCatching {
-                    RuntimesManager.getRuntimeHome(PREPARE_JRE_NAME)
-                }.getOrElse {
+                // A runtime can have a valid release file while its JLI library is absent
+                // (for example, after an interrupted or incomplete previous extraction).
+                // Treat that as a cache miss and reinstall the verified archive.
+                val cachedJavaHome = runCatching {
+                    RuntimesManager.getRuntimeHome(PREPARE_JRE_NAME).also { home ->
+                        check(findJliLibrary(home) != null) {
+                            "Cached Java 25 runtime is incomplete: libjli.so is missing."
+                        }
+                    }
+                }.getOrNull()
+
+                val javaHome = cachedJavaHome ?: run {
                     RuntimesManager.removeRuntime(PREPARE_JRE_NAME)
                     DownloadEngine.download(
                         DownloadRequest(
@@ -156,7 +178,11 @@ object HorizonRustInstallFiles {
                             prepareRuntime = false
                         )
                     }
-                    RuntimesManager.getRuntimeHome(PREPARE_JRE_NAME)
+                    RuntimesManager.getRuntimeHome(PREPARE_JRE_NAME).also { home ->
+                        check(findJliLibrary(home) != null) {
+                            "Downloaded Java 25 archive was extracted, but libjli.so could not be found."
+                        }
+                    }
                 }
 
                 prepareResources(
@@ -225,7 +251,8 @@ object HorizonRustInstallFiles {
         val engineRoot = ensurePreparationRoot(context)
 
         val javaLauncher = File(context.applicationInfo.nativeLibraryDir, "libhorizon_java25.so")
-        val jliLibrary = File(javaHome, "lib/jli/libjli.so")
+        val jliLibrary = findJliLibrary(javaHome)
+            ?: throw IllegalStateException("Java 25 libjli.so is missing from the extracted runtime: $javaHome")
         require(javaLauncher.isFile && javaLauncher.canExecute()) {
             "Horizon Java 25 launcher is missing or not executable: $javaLauncher"
         }
