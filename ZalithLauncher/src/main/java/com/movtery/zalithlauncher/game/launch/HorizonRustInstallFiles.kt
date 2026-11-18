@@ -71,6 +71,61 @@ object HorizonRustInstallFiles {
         }
     }
 
+    /**
+     * Prepare the downloaded 26.3 server with Horizon's pinned Rust preparer.
+     */
+    fun prepareResources(
+        context: Context,
+        gameHome: String,
+        javaHome: File,
+        outputDir: File
+    ) {
+        require(javaHome.isDirectory) { "Java 25 runtime is missing: $javaHome" }
+
+        val profileDir = File(getVersionsHome(gameHome), PROFILE_NAME)
+        val serverJar = File(profileDir, SERVER_JAR_NAME)
+        require(serverJar.isFile) { "Minecraft 26.3 server JAR is missing: $serverJar" }
+
+        val engineRoot = File(context.filesDir, "horizon/engine-check").apply {
+            check(isDirectory || mkdirs()) { "Could not create Horizon engine root: $absolutePath" }
+        }
+        context.assets.open("horizon/research-lock.json").use { input ->
+            File(engineRoot, "research-lock.json").outputStream().use { output -> input.copyTo(output) }
+        }
+
+        val javaLauncher = File(context.applicationInfo.nativeLibraryDir, "libhorizon_java25.so")
+        val jliLibrary = File(javaHome, "lib/jli/libjli.so")
+        require(javaLauncher.isFile && javaLauncher.canExecute()) {
+            "Horizon Java 25 launcher is missing or not executable: $javaLauncher"
+        }
+        require(jliLibrary.isFile) { "Java 25 libjli.so is missing: $jliLibrary" }
+
+        val result = runCatching {
+            JSONObject(
+                HorizonBridge.nativePrepareResources(
+                    engineRoot.absolutePath,
+                    File(gameHome).absolutePath,
+                    serverJar.absolutePath,
+                    javaHome.absolutePath,
+                    outputDir.absolutePath,
+                    javaLauncher.absolutePath,
+                    jliLibrary.absolutePath
+                )
+            )
+        }.getOrElse { error ->
+            throw IllegalStateException("Horizon 26.3 resource preparation could not start.", error)
+        }
+
+        if (!result.optBoolean("ok", false)) {
+            throw IllegalStateException(
+                "Horizon 26.3 resource preparation failed: " +
+                    result.optString("error", "unknown preparation error")
+            )
+        }
+
+        verifyPreparedResources(context, outputDir)
+    }
+
     fun createServerJarTask(gameHome: String): Task = Task.runTask(
         id = "HorizonRust.DownloadServerJar",
         dispatcher = Dispatchers.IO,
