@@ -133,13 +133,7 @@ object HorizonRustInstallFiles {
      * The lock file is copied from this APK's pinned engine revision into app-private storage.
      */
     fun verifyPreparedResources(context: Context, resourcesDir: File) {
-        val engineRoot = File(context.filesDir, "horizon/engine-check").apply {
-            check(isDirectory || mkdirs()) { "Could not create Horizon verification directory." }
-        }
-        val lockFile = File(engineRoot, "research-lock.json")
-        context.assets.open("horizon/research-lock.json").use { input ->
-            lockFile.outputStream().use { output -> input.copyTo(output) }
-        }
+        val engineRoot = ensurePreparationRoot(context)
 
         val result = runCatching {
             JSONObject(HorizonBridge.nativeCheckResources(engineRoot.absolutePath, resourcesDir.absolutePath))
@@ -169,12 +163,7 @@ object HorizonRustInstallFiles {
         val serverJar = File(profileDir, SERVER_JAR_NAME)
         require(serverJar.isFile) { "Minecraft 26.3 server JAR is missing: $serverJar" }
 
-        val engineRoot = File(context.filesDir, "horizon/engine-check").apply {
-            check(isDirectory || mkdirs()) { "Could not create Horizon engine root: $absolutePath" }
-        }
-        context.assets.open("horizon/research-lock.json").use { input ->
-            File(engineRoot, "research-lock.json").outputStream().use { output -> input.copyTo(output) }
-        }
+        val engineRoot = ensurePreparationRoot(context)
 
         val javaLauncher = File(context.applicationInfo.nativeLibraryDir, "libhorizon_java25.so")
         val jliLibrary = File(javaHome, "lib/jli/libjli.so")

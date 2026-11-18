@@ -133,6 +133,24 @@ jobs:
         if: matrix.arch == 'all' || matrix.arch == 'arm64'
         run: bash horizon-android/scripts/apply-engine-patches.sh
 
+      - name: Package pinned Horizon resource-preparation inputs
+        if: matrix.arch == 'all' || matrix.arch == 'arm64'
+        run: |
+          set -euo pipefail
+          UPSTREAM="horizon-android/engine/horizon-upstream"
+          DEST="ZalithLauncher/src/main/assets/horizon/prepare"
+          test -s "$UPSTREAM/research-lock.json"
+          test -s "$UPSTREAM/crates/horizon-prepare/src/exporters.rs"
+          test -d "$UPSTREAM/mods/horizon/src/test/java"
+          mkdir -p "$DEST/crates/horizon-prepare/src" "$DEST/mods/horizon/src/test"
+          install -m 0644 "$UPSTREAM/research-lock.json" "$DEST/research-lock.json"
+          install -m 0644 "$UPSTREAM/crates/horizon-prepare/src/exporters.rs" "$DEST/crates/horizon-prepare/src/exporters.rs"
+          cp -R "$UPSTREAM/mods/horizon/src/test/java" "$DEST/mods/horizon/src/test/"
+          test -s "$DEST/research-lock.json"
+          test -s "$DEST/crates/horizon-prepare/src/exporters.rs"
+          test -d "$DEST/mods/horizon/src/test/java"
+          echo "Packaged pinned Horizon 26.3 resource-preparation sources"
+
       - name: Build Horizon Android ARM64 bridge
         if: matrix.arch == 'all' || matrix.arch == 'arm64'
         run: |
