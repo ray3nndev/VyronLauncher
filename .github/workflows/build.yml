@@ -108,7 +108,13 @@ jobs:
 
       - name: Install pinned Horizon NDK
         if: matrix.arch == 'all' || matrix.arch == 'arm64'
-        run: sdkmanager "ndk;27.2.12479018"
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "Android SDK command-line tools not found under $ANDROID_HOME/cmdline-tools"
+            exit 1
+          fi
+          yes | "$SDKMANAGER" --install "ndk;27.2.12479018"
 
       - name: Configure Horizon Android linker
         if: matrix.arch == 'all' || matrix.arch == 'arm64'
