@@ -53,6 +53,65 @@ object HorizonRustInstallFiles {
     private const val JRE25_SHA256 = "c4ee53fc699be07ff10930261f12e335cbf411dd53e13a29d4cf7d6be8c35065"
 
 
+    /**
+     * Materialize the exact pinned upstream preparer inputs into writable app-private storage.
+     * The Java oracle sources and exporter settings are original Horizon inputs; game JARs are
+     * always downloaded by the user through Mojang's manifest and are never bundled here.
+     */
+    private fun ensurePreparationRoot(context: Context): File {
+        val root = File(context.filesDir, "horizon/engine-check")
+        val required = listOf(
+            File(root, "research-lock.json"),
+            File(root, "crates/horizon-prepare/src/exporters.rs"),
+            File(root, "mods/horizon/src/test/java")
+        )
+        fun complete(file: File): Boolean =
+            file.isFile || (file.isDirectory && file.walkTopDown().any { child -> child.isFile })
+
+        if (required.all(::complete)) return root
+
+        if (root.exists()) {
+            check(root.deleteRecursively()) { "Could not reset Horizon preparation inputs." }
+        }
+        check(root.mkdirs() || root.isDirectory) { "Could not create Horizon preparation directory." }
+        copyPreparationAsset(context, "horizon/prepare/research-lock.json", File(root, "research-lock.json"))
+        copyPreparationAsset(
+            context,
+            "horizon/prepare/crates/horizon-prepare/src/exporters.rs",
+            File(root, "crates/horizon-prepare/src/exporters.rs")
+        )
+        copyPreparationAsset(
+            context,
+            "horizon/prepare/mods/horizon/src/test/java",
+            File(root, "mods/horizon/src/test/java")
+        )
+        check(required.all(::complete)) {
+            "The APK is missing pinned Horizon preparation sources. Rebuild with the Horizon source package step."
+        }
+        return root
+    }
+
+    private fun copyPreparationAsset(context: Context, assetPath: String, destination: File) {
+        val children = context.assets.list(assetPath).orEmpty()
+        if (children.isNotEmpty()) {
+            check(destination.isDirectory || destination.mkdirs()) {
+                "Could not create Horizon asset directory: ${destination.absolutePath}"
+            }
+            children.forEach { child ->
+                copyPreparationAsset(context, "$assetPath/$child", File(destination, child))
+            }
+        } else {
+            destination.parentFile?.let { parent ->
+                check(parent.isDirectory || parent.mkdirs()) {
+                    "Could not create Horizon asset parent: ${parent.absolutePath}"
+                }
+            }
+            context.assets.open(assetPath).use { input ->
+                destination.outputStream().use { output -> input.copyTo(output) }
+            }
+        }
+    }
+
     /** Canonical app-private output consumed by both preparation and native launch. */
     fun resourcesDirectory(context: Context): File =
         File(context.filesDir, "horizon/26.3/resources")
