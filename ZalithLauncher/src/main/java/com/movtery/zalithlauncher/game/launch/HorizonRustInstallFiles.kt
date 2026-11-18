@@ -15,6 +15,9 @@
 
 package com.movtery.zalithlauncher.game.launch
 
+import android.content.Context
+import com.ray3nndev.vyron.nativebridge.HorizonBridge
+
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.game.download.engine.DownloadEngine
 import com.movtery.zalithlauncher.game.download.engine.DownloadRequest
@@ -43,74 +46,30 @@ object HorizonRustInstallFiles {
 
 
     /**
-     * Mirror the upstream horizon-prepare --check contract before starting native code.
-     * A server JAR alone is not a prepared game: the resource manifest, matching output
-     * stamp, and required extra assets must all be present.
+     * Verify prepared resources with Horizon's official checker, not a Kotlin approximation.
+     * The lock file is copied from this APK's pinned engine revision into app-private storage.
      */
-    fun verifyPreparedResources(resourcesDir: File) {
-        val manifestFile = File(resourcesDir, "horizon-resources.json")
-        val stampFile = File(resourcesDir, "horizon-prepare.json")
-        check(manifestFile.isFile) {
-            "Horizon 26.3 resources are not prepared. Missing horizon-resources.json."
+    fun verifyPreparedResources(context: Context, resourcesDir: File) {
+        val engineRoot = File(context.filesDir, "horizon/engine-check").apply {
+            check(isDirectory || mkdirs()) { "Could not create Horizon verification directory." }
         }
-        check(stampFile.isFile) {
-            "Horizon 26.3 resources are outdated or incomplete. Missing horizon-prepare.json."
-        }
-
-        val manifest = JSONObject(manifestFile.readText(Charsets.UTF_8))
-        check(manifest.optInt("schema", -1) == 7) {
-            "Horizon resources use an unsupported schema; prepare them again with the pinned Horizon version."
-        }
-        check(manifest.optString("minecraft") == MINECRAFT_VERSION) {
-            "Horizon resources are not prepared for Minecraft $MINECRAFT_VERSION."
-        }
-        val stamp = JSONObject(stampFile.readText(Charsets.UTF_8))
-        check(stamp.optInt("output_version", -1) == 4) {
-            "Horizon resources were prepared by an incompatible exporter version."
+        val lockFile = File(engineRoot, "research-lock.json")
+        context.assets.open("horizon/research-lock.json").use { input ->
+            lockFile.outputStream().use { output -> input.copyTo(output) }
         }
 
-        val assets = File(resourcesDir, "assets")
-        val required = listOf(
-            "minecraft/resourcepacks/programmer_art.zip",
-            "minecraft/resourcepacks/high_contrast.zip",
-            "minecraft/font/unifont.zip",
-            "pack.mcmeta",
-            "minecraft/sounds.json"
-        )
-        required.forEach { relative ->
-            check(File(assets, relative).isFile) {
-                "Horizon resources are incomplete: missing assets/$relative."
-            }
+        val result = runCatching {
+            JSONObject(HorizonBridge.nativeCheckResources(engineRoot.absolutePath, resourcesDir.absolutePath))
+        }.getOrElse { error ->
+            throw IllegalStateException("Horizon's official resource checker could not run.", error)
         }
-
-        val panorama = File(assets, "minecraft/textures/gui/title/background")
-        var expectedSize = -1
-        for (face in 0..5) {
-            val png = File(panorama, "panorama_$face.png")
-            check(png.isFile) { "Horizon resources are incomplete: missing ${png.name}." }
-            val bytes = png.readBytes()
-            check(bytes.size >= 24 &&
-                bytes.copyOfRange(0, 16).contentEquals(
-                    byteArrayOf(0x89.toByte(), 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d, 0x49, 0x48, 0x44, 0x52)
-                )
-            ) { "Horizon panorama face ${png.name} is not a valid PNG." }
-            val width = readPngInt(bytes, 16)
-            val height = readPngInt(bytes, 20)
-            check(width > 1 && width == height && (expectedSize == -1 || expectedSize == width)) {
-                "Horizon panorama faces must be non-placeholder squares of equal dimensions."
-            }
-            expectedSize = width
-        }
-        check(File(panorama, "panorama_overlay.png").isFile) {
-            "Horizon resources are incomplete: missing panorama_overlay.png."
+        if (!result.optBoolean("ok", false)) {
+            val details = result.optJSONArray("missing")
+                ?.let { array -> (0 until array.length()).joinToString("; ") { array.optString(it) } }
+                ?: result.optString("error", "unknown validation error")
+            throw IllegalStateException("Horizon 26.3 resources are not ready: $details")
         }
     }
-
-    private fun readPngInt(bytes: ByteArray, offset: Int): Int =
-        ((bytes[offset].toInt() and 0xff) shl 24) or
-            ((bytes[offset + 1].toInt() and 0xff) shl 16) or
-            ((bytes[offset + 2].toInt() and 0xff) shl 8) or
-            (bytes[offset + 3].toInt() and 0xff)
 
     fun createServerJarTask(gameHome: String): Task = Task.runTask(
         id = "HorizonRust.DownloadServerJar",
