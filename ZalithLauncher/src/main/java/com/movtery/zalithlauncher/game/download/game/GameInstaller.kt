@@ -342,8 +342,10 @@ class GameInstaller(
                             legacyFabricFolder = pathConfig.legacyFabricDir,
                             quiltFolder = pathConfig.quiltDir,
                             onComplete = {
-                                onInstalled(pathConfig.targetClientDir)
-                                targetClientDir = null
+                                if (info.customVersionName != HorizonRustInstallFiles.PROFILE_NAME) {
+                                    onInstalled(pathConfig.targetClientDir)
+                                    targetClientDir = null
+                                }
                             }
                         )
                     } else {
@@ -351,8 +353,10 @@ class GameInstaller(
                         createVanillaFilesCopyTask(
                             tempMinecraftDir = pathConfig.tempMinecraftDir,
                             onComplete = {
-                                onInstalled(pathConfig.targetClientDir)
-                                targetClientDir = null
+                                if (info.customVersionName != HorizonRustInstallFiles.PROFILE_NAME) {
+                                    onInstalled(pathConfig.targetClientDir)
+                                    targetClientDir = null
+                                }
                             }
                         )
                     }
@@ -369,6 +373,16 @@ class GameInstaller(
                             gameHome = targetGameFolder.absolutePath
                         )
                     )
+                    // Do not expose an installable Rust profile until the official
+                    // Horizon resource preparation and integrity check have passed.
+                    addTask(
+                        id = "HorizonRust.RegisterProfile",
+                        title = androidText(R.string.download_game_install_game_files_progress),
+                        icon = R.drawable.ic_build_outlined
+                    ) {
+                        onInstalled(pathConfig.targetClientDir)
+                        targetClientDir = null
+                    }
                 }
             }
         )
