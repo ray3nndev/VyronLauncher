@@ -68,7 +68,7 @@ object HorizonRustInstallFiles {
         fun complete(file: File): Boolean =
             file.isFile || (file.isDirectory && file.walkTopDown().any { child -> child.isFile })
 
-        if (required.all(::complete)) return root
+        if (required.all { complete(it) }) return root
 
         if (root.exists()) {
             check(root.deleteRecursively()) { "Could not reset Horizon preparation inputs." }
